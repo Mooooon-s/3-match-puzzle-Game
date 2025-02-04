@@ -22,14 +22,25 @@ public class GridManager : MonoBehaviour
     {
         tiles = new GameObject[xSize, ySize];
 
+        Vector3 StartPos = transform.position;
+
         for(int i = 0; i < xSize; i++)
         {
             for(int j = 0; j < ySize; j++)
             {
                 GameObject NewTile = 
-                    Instantiate<GameObject>(tile, new Vector3(i*(i-offsetX),j*(j-offsetY)),tile.transform.rotation);
+                    Instantiate<GameObject>(tile, new Vector3(StartPos.x+(i*offsetX), StartPos.y+(j*offsetY)),tile.transform.rotation);
+                tiles[i, j]=NewTile;
             }
         }
+
+        /*for(int i = 0;i < xSize; i++)
+        {
+            for(int j= 0; j < ySize; j++)
+            {
+                Debug.Log(tiles[i,j].name);
+            }
+        }*/
     }
 
     // Start is called before the first frame update
