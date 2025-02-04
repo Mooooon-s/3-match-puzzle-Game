@@ -6,14 +6,14 @@ public class GridManager : MonoBehaviour
 {
     public static GridManager Instance = null;
     
-    public GameObject tile;
+    public GameObject Grid;
     public int xSize,ySize;
     public GameObject[,] tiles;
 
     void Awake()
     {
         Instance = GetComponent<GridManager>();
-        Vector2 offset = tile.GetComponent<SpriteRenderer>().bounds.size;
+        Vector2 offset = Grid.GetComponent<SpriteRenderer>().bounds.size;
         Debug.Log(offset);
         CreateGrid(offset.x,offset.y);
     }
@@ -28,9 +28,8 @@ public class GridManager : MonoBehaviour
         {
             for(int j = 0; j < ySize; j++)
             {
-                GameObject NewTile = 
-                    Instantiate<GameObject>(tile, new Vector3(StartPos.x+(i*offsetX), StartPos.y+(j*offsetY)),tile.transform.rotation);
-                tiles[i, j]=NewTile;
+                GameObject NewGrid = 
+                    Instantiate<GameObject>(Grid, new Vector3(StartPos.x+(i*offsetX), StartPos.y+(j*offsetY)),Grid.transform.rotation);
             }
         }
 
