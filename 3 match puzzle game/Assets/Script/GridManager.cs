@@ -10,11 +10,13 @@ public class GridManager : MonoBehaviour
     public int xSize,ySize;
     public GameObject[,] tiles;
 
+    public List<Sprite> list = new List<Sprite>();
+
     void Awake()
     {
         Instance = GetComponent<GridManager>();
         Vector2 offset = Grid.GetComponent<SpriteRenderer>().bounds.size;
-        Debug.Log(offset);
+        //Debug.Log(offset);
         CreateGrid(offset.x,offset.y);
     }
 
