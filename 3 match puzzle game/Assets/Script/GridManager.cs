@@ -5,7 +5,6 @@ using UnityEngine.UIElements;
 
 public class GridManager : MonoBehaviour
 {
-    public static GridManager Instance = null;
     public enum BlockType
     {
         Normal,
@@ -27,15 +26,15 @@ public class GridManager : MonoBehaviour
     private Dictionary<BlockType, GameObject> blockPrefabDict;
     public GameObject Grid;
     public int xSize,ySize;
-    public GameObject[,] Blocks;
+    public GameBlock[,] Blocks;
+    public Vector2 offSet;
 
 
     public List<Sprite> list = new List<Sprite>();
 
     void Awake()
     {
-        Instance = GetComponent<GridManager>();
-        Vector2 offset = Grid.GetComponent<SpriteRenderer>().bounds.size;
+        offSet = Grid.GetComponent<SpriteRenderer>().bounds.size;
 
         blockPrefabDict = new Dictionary<BlockType, GameObject>();
         for(int i = 0; i < blockPrefabs.Length; i++)
@@ -45,12 +44,12 @@ public class GridManager : MonoBehaviour
                 blockPrefabDict.Add(blockPrefabs[i]._type, blockPrefabs[i]._block);
             }
         }
-        CreateGrid(offset);
+        CreateGrid(offSet);
     }
 
     private void CreateGrid(Vector2 _offset)
     {
-        Blocks = new GameObject[xSize, ySize];
+        Blocks = new GameBlock[xSize, ySize];
 
         Vector3 StartPos = transform.position;
 
@@ -60,7 +59,7 @@ public class GridManager : MonoBehaviour
             {
                 //Create Grid
                 GameObject NewGrid = 
-                    Instantiate<GameObject>(Grid, GetPosition(i, j, _offset),Quaternion.identity);
+                    Instantiate<GameObject>(Grid, GetPositionVec3(i,j,_offset), Quaternion.identity);
             }
         }
 
@@ -70,22 +69,32 @@ public class GridManager : MonoBehaviour
             {
                 //Create Block
                 GameObject NewBlock =
-                    Instantiate<GameObject>(blockPrefabDict[BlockType.Normal], GetPosition(i, j, _offset), Quaternion.identity) ;
+                    Instantiate<GameObject>(blockPrefabDict[BlockType.Normal], Vector3.zero, Quaternion.identity) ;
                 NewBlock.name =NewBlock.name+ " (" + i + ", " + j+")";
+
+                Blocks[i,j] = NewBlock.GetComponent<GameBlock>();
+                Blocks[i, j].Init(i, j, this, BlockType.Normal);
+                if (Blocks[i, j].IsMoveable())
+                {
+                    Blocks[i, j].MoveableComponent.Move(i,j);
+                }
+
+                if (Blocks[i, j].IsAnimalType())
+                {
+                    Blocks[i, j].AnimalComponent.SetAnimalType((AnimalBlock.Animaltype)Random.Range(0, Blocks[i, j].AnimalComponent.numAnimals));
+                }
             }
         }
-        /*for(int i = 0;i < xSize; i++)
-        {
-            for(int j= 0; j < ySize; j++)
-            {
-                Debug.Log(tiles[i,j].name);
-            }
-        }*/
     }
 
-    Vector2 GetPosition(float _x, float _y,Vector2 _offset)
+    public Vector2 GetPosition(float _x, float _y,Vector2 _offset)
     {
         return new Vector2(transform.position.x - xSize/2.0f +_x*(_offset.x), transform.position.y + ySize/2.0f -_y*(_offset.y));
+    }
+
+    public Vector3 GetPositionVec3(float _x, float _y, Vector2 _offset)
+    {
+        return new Vector3(transform.position.x - xSize / 2.0f + _x * (_offset.x), transform.position.y + ySize / 2.0f - _y * (_offset.y),100);
     }
 
     // Start is called before the first frame update
