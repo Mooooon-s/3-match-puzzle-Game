@@ -10,7 +10,7 @@ public class TileManager : MonoBehaviour
 
     List<Sprite> sprites = new List<Sprite>();
 
-    GameObject block;
+    public GameObject block;
     GameObject[,] blocks;
 
 
@@ -30,16 +30,20 @@ public class TileManager : MonoBehaviour
     {
         UnityEngine.Vector3 startPos = grid.GetComponent<Transform>().position;
 
-        Debug.Log(startPos);
+        UnityEngine.Vector3 offset = grid.Grid.GetComponent<SpriteRenderer>().bounds.size;
+
+
+        blocks = new GameObject[grid.xSize,grid.ySize];
 
         for(int i = 0; i < getSize().x; i++)
         {
             for(int j = 0 ; j < getSize().y; j++)
             {
-                Debug.Log("DebugGetGridSize");
+                GameObject NewBlock 
+                    = Instantiate(block, new UnityEngine.Vector3(startPos.x+(i* offset.x), startPos.y+(j* offset.y)),block.transform.rotation);
+                blocks[i,j] = NewBlock;
             }
         }
-        
     }
 
     // Update is called once per frame
