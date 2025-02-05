@@ -231,6 +231,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1e893fc0e0ac524baa1f283cea19479, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  blockPrefabs:
+  - _type: 0
+    _block: {fileID: 8984644990335597450, guid: 9c216251ed8c3b24b882fa55198fa8ea,
+      type: 3}
   Grid: {fileID: 66050201161060896, guid: c7a884cf89b26954c8e28be4dd5c07ac, type: 3}
   xSize: 5
   ySize: 8
