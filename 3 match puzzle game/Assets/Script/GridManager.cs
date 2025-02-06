@@ -72,6 +72,8 @@ public class GridManager : MonoBehaviour
                 SpawnNewBlock(i, j, offSet, BlockType.Empty);
             }
         }
+
+        Fill();
     }
 
     public Vector2 GetPosition(float _x, float _y,Vector2 _offset)
@@ -106,5 +108,59 @@ public class GridManager : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void Fill()
+    {
+        while (FillStep()) { } ;
+    }
+
+    public bool FillStep()
+    {
+        bool movedPiece = false;
+
+
+        //start from bottom
+        for(int y = ySize-2; y >= 0; y--)
+        {
+            for(int x=0; x < xSize; x++)
+            {
+                GameBlock block = Blocks[x, y];
+                //Check the Empty Block
+                // if have Move Scrpt get true
+                if (block.IsMoveable())
+                {
+                    //Check the below block
+                    GameBlock belowBlock = Blocks[x, y+1];
+                    if (belowBlock.Type == BlockType.Empty)
+                    {
+                        //swap below block
+                        block.MoveableComponent.Move(x, y+1);
+                        Blocks[x, y+1] = block;
+                        SpawnNewBlock(x, y, offSet, BlockType.Empty) ;
+                        movedPiece = true;
+                    }
+                }
+            }
+        }
+
+        //re check top row
+        for(int x=0; x < xSize;x++)
+        {
+            GameBlock belowBlock = Blocks[x, 0];
+            if(belowBlock.Type == BlockType.Empty)
+            {
+                GameObject newBlock = Instantiate<GameObject>(blockPrefabDict[BlockType.Normal], GetPositionVec3(x, -1,offSet), Quaternion.identity);
+                newBlock.transform.parent = transform;
+
+                Blocks[x,0] = newBlock.GetComponent<GameBlock>();
+                Blocks[x, 0].Init(x, -1, this, BlockType.Normal);
+                Blocks[x, 0].MoveableComponent.Move(x, 0);
+                Blocks[x, 0].AnimalComponent.SetAnimalType((AnimalBlock.Animaltype)Random.Range(0, (int)AnimalBlock.Animaltype.End));
+                movedPiece = true;
+            }
+        }
+
+        return movedPiece;
     }
 }
