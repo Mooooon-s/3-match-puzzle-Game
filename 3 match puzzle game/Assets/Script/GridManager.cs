@@ -62,6 +62,7 @@ public class GridManager : MonoBehaviour
                 //Create Grid
                 GameObject NewGrid = 
                     Instantiate<GameObject>(Grid, GetPositionVec3(i,j,_offset), Quaternion.identity);
+                NewGrid.gameObject.name = NewGrid.name + " (" + i + " , " + j + ") ";
             }
         }
 
@@ -73,6 +74,13 @@ public class GridManager : MonoBehaviour
                 SpawnNewBlock(i, j, offSet, BlockType.Empty);
             }
         }
+
+        //test Code
+        Destroy(Blocks[4, 4].gameObject);
+        SpawnNewBlock(4,4, offSet, BlockType.Obstacle);
+
+        Destroy(Blocks[1, 2].gameObject);
+        SpawnNewBlock(1, 2, offSet, BlockType.Obstacle);
 
         StartCoroutine( Fill());
     }
@@ -137,11 +145,33 @@ public class GridManager : MonoBehaviour
                     GameBlock belowBlock = Blocks[x, y+1];
                     if (belowBlock.Type == BlockType.Empty)
                     {
+                        Destroy(belowBlock.gameObject);
                         //swap below block
                         block.MoveableComponent.Move(x, y+1,fillTime);
                         Blocks[x, y+1] = block;
-                        SpawnNewBlock(x, y, offSet, BlockType.Empty) ;
+                        SpawnNewBlock(x, y, offSet, BlockType.Empty);
                         movedPiece = true;
+                    }
+                    else //someting block in below
+                    {
+                        int side = CheckSide(x, y);
+                        if(side != 0)
+                        {
+                            int DiagX = x + side;
+                            if(DiagX>=0 && DiagX < xSize)
+                            {
+                                GameBlock DiagBlack = Blocks[DiagX, y+1];
+
+                                if (DiagBlack.Type != BlockType.Empty) continue;
+                                Destroy(DiagBlack.gameObject);
+                                block.MoveableComponent.Move(DiagX, y+1,fillTime);
+                                Blocks[DiagX, y + 1]=block;
+                                SpawnNewBlock(x,y, offSet, BlockType.Empty);
+
+                                movedPiece= true;
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -153,6 +183,7 @@ public class GridManager : MonoBehaviour
             GameBlock belowBlock = Blocks[x, 0];
             if(belowBlock.Type == BlockType.Empty)
             {
+                Destroy(belowBlock.gameObject);
                 GameObject newBlock = Instantiate<GameObject>(blockPrefabDict[BlockType.Normal], GetPosition(x, -1,offSet), Quaternion.identity);
                 newBlock.transform.parent = transform;
 
@@ -165,5 +196,22 @@ public class GridManager : MonoBehaviour
         }
 
         return movedPiece;
+    }
+
+    public int CheckSide(int x,int y)
+    {
+        if (x - 1 < 0 || x + 1 >= xSize) return 0;
+        GameBlock leftBlock = Blocks[x - 1, y];
+        GameBlock rightBlock = Blocks[x + 1, y];
+
+        if (leftBlock.Type == BlockType.Obstacle)
+        {
+            return -1;
+        }
+        else if(rightBlock.Type == BlockType.Obstacle)
+        {
+            return 1;
+        }
+        return 0;
     }
 }
