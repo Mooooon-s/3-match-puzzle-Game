@@ -89,7 +89,7 @@ public class GridManager : MonoBehaviour
 
     public GameBlock SpawnNewBlock(int _x, int _y, Vector2 _offset,BlockType _type)
     {
-        GameObject newBlock = Instantiate<GameObject>(blockPrefabDict[_type],GetPositionVec3(_x,_y,offSet),Quaternion.identity);
+        GameObject newBlock = Instantiate<GameObject>(blockPrefabDict[_type], GetPosition(_x,_y,offSet),Quaternion.identity);
 
         newBlock.transform.parent = transform;
 
@@ -138,7 +138,7 @@ public class GridManager : MonoBehaviour
                     if (belowBlock.Type == BlockType.Empty)
                     {
                         //swap below block
-                        block.MoveableComponent.Move(x, y+1);
+                        block.MoveableComponent.Move(x, y+1,fillTime);
                         Blocks[x, y+1] = block;
                         SpawnNewBlock(x, y, offSet, BlockType.Empty) ;
                         movedPiece = true;
@@ -153,12 +153,12 @@ public class GridManager : MonoBehaviour
             GameBlock belowBlock = Blocks[x, 0];
             if(belowBlock.Type == BlockType.Empty)
             {
-                GameObject newBlock = Instantiate<GameObject>(blockPrefabDict[BlockType.Normal], GetPositionVec3(x, -1,offSet), Quaternion.identity);
+                GameObject newBlock = Instantiate<GameObject>(blockPrefabDict[BlockType.Normal], GetPosition(x, -1,offSet), Quaternion.identity);
                 newBlock.transform.parent = transform;
 
                 Blocks[x,0] = newBlock.GetComponent<GameBlock>();
                 Blocks[x, 0].Init(x, -1, this, BlockType.Normal);
-                Blocks[x, 0].MoveableComponent.Move(x, 0);
+                Blocks[x, 0].MoveableComponent.Move(x, 0,fillTime);
                 Blocks[x, 0].AnimalComponent.SetAnimalType((AnimalBlock.Animaltype)Random.Range(0, (int)AnimalBlock.Animaltype.End));
                 movedPiece = true;
             }
