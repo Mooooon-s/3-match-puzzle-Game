@@ -27,6 +27,7 @@ public class GridManager : MonoBehaviour
     private Dictionary<BlockType, GameObject> blockPrefabDict;
     public GameObject Grid;
     public int xSize,ySize;
+    public float fillTime;
     public GameBlock[,] Blocks;
     public Vector2 offSet;
 
@@ -73,7 +74,7 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        Fill();
+        StartCoroutine( Fill());
     }
 
     public Vector2 GetPosition(float _x, float _y,Vector2 _offset)
@@ -110,9 +111,11 @@ public class GridManager : MonoBehaviour
         
     }
 
-    public void Fill()
+    public IEnumerator Fill()
     {
-        while (FillStep()) { } ;
+        while (FillStep()) {
+            yield return new WaitForSeconds(fillTime);
+        } ;
     }
 
     public bool FillStep()

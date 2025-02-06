@@ -241,6 +241,7 @@ MonoBehaviour:
   Grid: {fileID: 66050201161060896, guid: c7a884cf89b26954c8e28be4dd5c07ac, type: 3}
   xSize: 5
   ySize: 8
+  fillTime: 0.1
   offSet: {x: 0, y: 0}
   list:
   - {fileID: 21300000, guid: 2d31eb562f7a502479be4371ad78c4ad, type: 3}
