@@ -238,6 +238,9 @@ MonoBehaviour:
   - _type: 1
     _block: {fileID: 8984644990335597450, guid: 9c216251ed8c3b24b882fa55198fa8ea,
       type: 3}
+  - _type: 3
+    _block: {fileID: 6354038506423867485, guid: b6002b3560438f84f8b9e85bad47c3b6,
+      type: 3}
   Grid: {fileID: 66050201161060896, guid: c7a884cf89b26954c8e28be4dd5c07ac, type: 3}
   xSize: 5
   ySize: 8
