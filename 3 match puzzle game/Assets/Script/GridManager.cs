@@ -7,6 +7,7 @@ public class GridManager : MonoBehaviour
 {
     public enum BlockType
     {
+        Empty,
         Normal,
         Active,
         Obstacle,
@@ -68,21 +69,7 @@ public class GridManager : MonoBehaviour
             for(int j = 0;j<ySize; j++)
             {
                 //Create Block
-                GameObject NewBlock =
-                    Instantiate<GameObject>(blockPrefabDict[BlockType.Normal], Vector3.zero, Quaternion.identity) ;
-                NewBlock.name =NewBlock.name+ " (" + i + ", " + j+")";
-
-                Blocks[i,j] = NewBlock.GetComponent<GameBlock>();
-                Blocks[i, j].Init(i, j, this, BlockType.Normal);
-                if (Blocks[i, j].IsMoveable())
-                {
-                    Blocks[i, j].MoveableComponent.Move(i,j);
-                }
-
-                if (Blocks[i, j].IsAnimalType())
-                {
-                    Blocks[i, j].AnimalComponent.SetAnimalType((AnimalBlock.Animaltype)Random.Range(0, Blocks[i, j].AnimalComponent.numAnimals));
-                }
+                SpawnNewBlock(i, j, offSet, BlockType.Empty);
             }
         }
     }
@@ -95,6 +82,18 @@ public class GridManager : MonoBehaviour
     public Vector3 GetPositionVec3(float _x, float _y, Vector2 _offset)
     {
         return new Vector3(transform.position.x - xSize / 2.0f + _x * (_offset.x), transform.position.y + ySize / 2.0f - _y * (_offset.y),100);
+    }
+
+    public GameBlock SpawnNewBlock(int _x, int _y, Vector2 _offset,BlockType _type)
+    {
+        GameObject newBlock = Instantiate<GameObject>(blockPrefabDict[_type],GetPositionVec3(_x,_y,offSet),Quaternion.identity);
+
+        newBlock.transform.parent = transform;
+
+        Blocks[_x, _y] = newBlock.GetComponent<GameBlock>();
+        Blocks[_x, _y].Init(_x, _y, this, _type);
+
+        return Blocks[_x, _y];
     }
 
     // Start is called before the first frame update
