@@ -34,6 +34,9 @@ public class GridManager : MonoBehaviour
 
     public List<Sprite> list = new List<Sprite>();
 
+    public GameBlock mousePickedBlock;
+    public GameBlock mouseEnterBlock;
+
     void Awake()
     {
         offSet = Grid.GetComponent<SpriteRenderer>().bounds.size;
@@ -190,7 +193,9 @@ public class GridManager : MonoBehaviour
                 Blocks[x,0] = newBlock.GetComponent<GameBlock>();
                 Blocks[x, 0].Init(x, -1, this, BlockType.Normal);
                 Blocks[x, 0].MoveableComponent.Move(x, 0,fillTime);
-                Blocks[x, 0].AnimalComponent.SetAnimalType((AnimalBlock.Animaltype)Random.Range(0, (int)AnimalBlock.Animaltype.End));
+                AnimalBlock.Animaltype animalType = (AnimalBlock.Animaltype)Random.Range(0, (int)AnimalBlock.Animaltype.End);
+                Blocks[x, 0].AnimalComponent.SetAnimalType(animalType);
+                Blocks[x, 0].name = animalType.ToString();
                 movedPiece = true;
             }
         }
@@ -213,5 +218,48 @@ public class GridManager : MonoBehaviour
             return 1;
         }
         return 0;
+    }
+
+    public bool IsAdjBlock(GameBlock _block1,GameBlock _block2)
+    {
+        // 한칸만 확인 십자가로만 이동이 가능하기 때문에 두가지 만 확인하면 됨
+        if(_block1.X == _block2.X && Mathf.Abs(_block1.Y-_block2.Y)==1)
+            return true;
+        else if (_block1.Y == _block2.Y && Mathf.Abs(_block1.X - _block2.X) == 1)
+            return true;
+        return false;
+    }
+
+    public void SwapBlock(GameBlock _block1,GameBlock _block2)
+    {
+        if(_block1.IsMoveable() && _block2.IsMoveable())
+        {
+
+            Blocks[_block1.X, _block1.Y] = _block2;
+            Blocks[_block2.X, _block2.Y] = _block1;
+
+            Vector2Int tmpPos = new Vector2Int(_block1.X,_block1.Y);
+            _block1.MoveableComponent.Move(_block2.X, _block2.Y, fillTime);
+            _block2.MoveableComponent.Move(tmpPos.x, tmpPos.y, fillTime);
+            int a = 0;
+        }
+    }
+
+    public void PressedBlock(GameBlock _gameBlock)
+    {
+        mousePickedBlock = _gameBlock;
+    }
+
+    public void EnterBlock(GameBlock _gameBlock)
+    {
+        mouseEnterBlock = _gameBlock;
+    }
+
+    public void ReleaseBlock()
+    {
+        if (IsAdjBlock(mousePickedBlock, mouseEnterBlock))
+        {
+            SwapBlock(mousePickedBlock, mouseEnterBlock);
+        }
     }
 }
