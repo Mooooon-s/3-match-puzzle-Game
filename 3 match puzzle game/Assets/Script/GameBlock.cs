@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class GameBlock : MonoBehaviour
 {
-    private float x;
-    private float y;
+    private int x;
+    private int y;
 
-    public float X
+    public int X
     {
         get { return x; }
         set { if(IsMoveable())
@@ -15,7 +15,7 @@ public class GameBlock : MonoBehaviour
         }
     }
 
-    public float Y
+    public int Y
     {
         get { return y; }
         set
@@ -88,5 +88,20 @@ public class GameBlock : MonoBehaviour
     public bool IsAnimalType()
     {
         return animalComponent != null;
+    }
+
+    private void OnMouseEnter()
+    {
+        grid.EnterBlock(this);
+    }
+
+    private void OnMouseDown()
+    {
+        grid.PressedBlock(this);
+    }
+
+    private void OnMouseUp()
+    {
+        grid.ReleaseBlock();
     }
 }

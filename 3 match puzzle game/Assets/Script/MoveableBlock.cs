@@ -23,7 +23,7 @@ public class MoveableBlock : MonoBehaviour
         
     }
 
-    public void Move(float _mX,float _mY,float time)
+    public void Move(int _mX,int _mY,float time)
     {
         if(moveCoroutine != null)
         {
@@ -35,7 +35,7 @@ public class MoveableBlock : MonoBehaviour
         //index??
     }
 
-    private IEnumerator MoveCoroutine(float x, float y, float time)
+    private IEnumerator MoveCoroutine(int x, int y, float time)
     {
         block.X = x;
         block.Y = y;
