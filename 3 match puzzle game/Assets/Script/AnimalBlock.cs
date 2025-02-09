@@ -30,7 +30,7 @@ public class AnimalBlock : MonoBehaviour
     private Animaltype animal;
     public Animaltype animalType
     {
-        get { return animalType; }
+        get { return animal; }
         set { SetAnimalType(value); }
     }
 

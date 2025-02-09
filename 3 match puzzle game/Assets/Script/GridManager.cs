@@ -1,7 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 using UnityEngine;
 using UnityEngine.UIElements;
+
+
+
+using Quaternion = UnityEngine.Quaternion;
+using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
+using tii = System.Tuple<int, int>;
+using System;
+using UnityEngine.XR.WSA.Input;
 
 public class GridManager : MonoBehaviour
 {
@@ -36,6 +46,8 @@ public class GridManager : MonoBehaviour
 
     public GameBlock mousePickedBlock;
     public GameBlock mouseEnterBlock;
+
+    private List<tii>[,] adj;
 
     void Awake()
     {
@@ -127,6 +139,18 @@ public class GridManager : MonoBehaviour
         while (FillStep()) {
             yield return new WaitForSeconds(fillTime);
         } ;
+
+        for (int i = 0; i < xSize; i++)
+        {
+            for (int j = 0; j < ySize; j++)
+            {
+                if (IsMatched(new tii(i, j)))
+                {
+                    Debug.Log(i + "," + j + "= true");
+                }
+                Debug.Log(i + "," + j + "= false");
+            }
+        }
     }
 
     public bool FillStep()
@@ -193,7 +217,7 @@ public class GridManager : MonoBehaviour
                 Blocks[x,0] = newBlock.GetComponent<GameBlock>();
                 Blocks[x, 0].Init(x, -1, this, BlockType.Normal);
                 Blocks[x, 0].MoveableComponent.Move(x, 0,fillTime);
-                AnimalBlock.Animaltype animalType = (AnimalBlock.Animaltype)Random.Range(0, (int)AnimalBlock.Animaltype.End);
+                AnimalBlock.Animaltype animalType = (AnimalBlock.Animaltype)UnityEngine.Random.Range(0, (int)AnimalBlock.Animaltype.End);
                 Blocks[x, 0].AnimalComponent.SetAnimalType(animalType);
                 Blocks[x, 0].name = animalType.ToString();
                 movedPiece = true;
@@ -241,8 +265,87 @@ public class GridManager : MonoBehaviour
             Vector2Int tmpPos = new Vector2Int(_block1.X,_block1.Y);
             _block1.MoveableComponent.Move(_block2.X, _block2.Y, fillTime);
             _block2.MoveableComponent.Move(tmpPos.x, tmpPos.y, fillTime);
-            int a = 0;
         }
+    }
+    public void MakeAdj()
+    {
+        //인접 리스트 생성
+        adj = new List<tii>[xSize,ySize];
+        for(int i=0; i< xSize; i++)
+        {
+            for(int j=0; j< ySize; j++)
+            {
+                adj[i, j] = new List<tii>();
+            }
+        }
+
+        for (int i=0; i<xSize; i++)
+        {
+            for(int j=0; j<ySize; j++)
+            {
+                //x축
+                if (i - 1 >= 0)
+                {
+                    //block Type 비교
+                    if (Blocks[i, j].Type == BlockType.Normal && Blocks[i - 1, j].Type == BlockType.Normal)
+                    {
+                        //Animal Type비교
+                        if (Blocks[i, j].AnimalComponent.animalType == Blocks[i - 1, j].AnimalComponent.animalType)
+                        {
+                            adj[i, j].Add(new tii(i - 1, j));
+                            adj[i - 1, j].Add(new tii(i, j));
+                        }
+                    }
+                }
+                //y축
+                if(j - 1 >= 0)
+                {
+                    if (Blocks[i, j].Type == BlockType.Normal && Blocks[i, j-1].Type == BlockType.Normal)
+                    {
+                        if (Blocks[i, j].AnimalComponent.animalType == Blocks[i, j - 1].AnimalComponent.animalType)
+                        {
+                            adj[i, j].Add(new tii(i, j - 1));
+                            adj[i, j - 1].Add(new tii(i, j));
+                        }
+                    }
+                }
+            }
+        }
+
+
+    }
+
+    public bool IsMatched(tii pos)
+    {
+        //board
+        bool[,] visited = new bool[xSize,ySize];
+        Queue<tii> queue = new Queue<tii>();
+
+        //인접리스트 생성
+        MakeAdj();
+
+        //큐에 현재 위치 넣고 BFS돌리기
+        queue.Enqueue(pos);
+        visited[pos.Item1, pos.Item2] = true;
+        int _count = 1;
+
+        while(queue.Count != 0)
+        {
+            tii _tii = queue.Peek(); queue.Dequeue();
+            foreach (var s in adj[_tii.Item1,_tii.Item2])
+            {
+                tii nextpos= s;
+                if (visited[nextpos.Item1, nextpos.Item2]) continue;
+                visited[nextpos.Item1, nextpos.Item2] = true;
+                queue.Enqueue(nextpos);
+                _count++;
+            }
+        }
+
+        //3개 이상이면 참
+        if(_count >= 3)
+            return true;
+        return false;
     }
 
     public void PressedBlock(GameBlock _gameBlock)
