@@ -48,6 +48,7 @@ public class GridManager : MonoBehaviour
     public GameBlock mouseEnterBlock;
 
     private List<tii>[,] adj;
+    private List<tii> connetList = new List<tii>();
 
     void Awake()
     {
