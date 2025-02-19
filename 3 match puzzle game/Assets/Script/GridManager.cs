@@ -47,15 +47,6 @@ public class GridManager : MonoBehaviour
     public GameBlock mousePickedBlock;
     public GameBlock mouseEnterBlock;
 
-    private List<tii>[,] adj;
-    private List<tii> connetList = new List<tii>();
-
-
-
-    private List<tii>[,] verticalAdj;
-    private List<tii>[,] horizontalAadj;
-
-
     private HashSet<GameBlock> verticalList = new HashSet<GameBlock>();
     private HashSet<GameBlock> horizontalList = new HashSet<GameBlock>();
 
@@ -256,159 +247,120 @@ public class GridManager : MonoBehaviour
     {
         if(_block1.IsMoveable() && _block2.IsMoveable())
         {
-            Blocks[_block1.X, _block1.Y] = _block2;
-            Blocks[_block2.X, _block2.Y] = _block1;
-
-            Vector2Int tmpPos = new Vector2Int(_block1.X,_block1.Y);
-            _block1.MoveableComponent.Move(_block2.X, _block2.Y, fillTime);
-            _block2.MoveableComponent.Move(tmpPos.x, tmpPos.y, fillTime);
-
-            if (IsMatched(_block1, _block2))
-            {
-                int a = 0;
-                Debug.Log("True");
-            }
-            else
+            if (IsMatching(_block1, _block2.X,_block2.Y)!=null || IsMatching(_block2,_block1.X,_block1.Y)!=null)
             {
                 Blocks[_block1.X, _block1.Y] = _block2;
                 Blocks[_block2.X, _block2.Y] = _block1;
 
-                tmpPos = new Vector2Int(_block1.X, _block1.Y);
+                Vector2Int tmpPos = new Vector2Int(_block1.X,_block1.Y);
                 _block1.MoveableComponent.Move(_block2.X, _block2.Y, fillTime);
                 _block2.MoveableComponent.Move(tmpPos.x, tmpPos.y, fillTime);
-                Debug.Log("False");
+            }
+            else
+            {
+                Blocks[_block1.X, _block1.Y] = _block1;
+                Blocks[_block2.X, _block2.Y] = _block2;
             }
         }
     }
-    public void MakeAdj(GameBlock _block,int newX, int newY)
+    public List<GameBlock> IsMatching(GameBlock _block,int newX, int newY)
     {
         horizontalList.Clear();
         verticalList.Clear();
-
-        horizontalList.Add(_block);
-        int x = newX;
-        for(int i = 0; i < 2; i++)
+        if(_block.IsAnimalType())
         {
-            for(int offsetX = 0; offsetX <= xSize; offsetX++)
+            horizontalList.Add(_block);
+            for(int i = 0; i < 2; i++)
             {
-                if (i == 0)
+                for (int offsetX = 1; offsetX < xSize; offsetX++)
                 {
-                    x = newX - offsetX;
-                }
-                else if (i == 1)
-                {
-                    x = newX + offsetX;
-                }
-                if(x < 0 || x >= xSize)
-                {
-                    break;
-                }
+                    int x = newX;
 
-
-                if (Blocks[x, _block.Y].IsAnimalType() && x != _block.X)
-                {
-                    if (Blocks[x, _block.Y].AnimalComponent.animalType == _block.AnimalComponent.animalType)
+                    if (i == 0)
                     {
-                        horizontalList.Add(Blocks[x, _block.Y]);
+                        x = newX - offsetX;
+                    }
+                    else if (i == 1)
+                    {
+                        x = newX + offsetX;
+                    }
+
+                    if (x < 0 || x >= xSize)
+                    {
+                        break;
+                    }
+                    if (Blocks[x, newY].IsAnimalType() && Blocks[x, newY].AnimalComponent.animalType == _block.AnimalComponent.animalType)
+                    {
+                        horizontalList.Add(Blocks[x, newY]);
                     }
                     else
                     {
                         break;
                     }
+
                 }
             }
-        }
 
-        verticalList.Add(_block);
-        int y = newY;
-        for (int i = 0; i < 2; i++)
-        {
-            for (int offsetY = 0; offsetY <= ySize; offsetY++)
+            if(horizontalList.Count >= 3)
             {
-                if (i == 0)
+                List < GameBlock > matchedBlocks = new List<GameBlock>();
+                foreach (var s in horizontalList)
                 {
-                    y = newY - offsetY;
-                }
-                else if (i == 1)
-                {
-                    y = newY + offsetY;
-                }
-                if (y < 0 || y >= ySize)
-                {
-                    break;
+                    matchedBlocks.Add(s);
                 }
 
-
-                if (Blocks[_block.X, y].IsAnimalType() && y != _block.Y)
+                if(matchedBlocks.Count >= 3)
                 {
-                    if (Blocks[_block.X, y].AnimalComponent.animalType == _block.AnimalComponent.animalType)
+                    return matchedBlocks;
+                }
+            }
+
+            verticalList.Add(_block);
+            for (int i = 0; i < 2; i++)
+            {
+                for (int offsetY = 1; offsetY < ySize; offsetY++)
+                {
+                    int y = newY;
+
+                    if (i == 0)
                     {
-                        verticalList.Add(Blocks[_block.X, y]);
+                        y = newY - offsetY;
+                    }
+                    else if (i == 1)
+                    {
+                        y = newY + offsetY;
+                    }
+
+                    if (y < 0 || y >= ySize)
+                    {
+                        break;
+                    }
+                    if (Blocks[newX,y].IsAnimalType() && Blocks[newX, y].AnimalComponent.animalType == _block.AnimalComponent.animalType)
+                    {
+                        verticalList.Add(Blocks[newX, y]);
                     }
                     else
                     {
                         break;
                     }
+
+                }
+            }
+            if (verticalList.Count >= 3)
+            {
+                List<GameBlock> matchedBlocks = new List<GameBlock>();
+                foreach (var s in verticalList)
+                {
+                    matchedBlocks.Add(s);
+                }
+
+                if (matchedBlocks.Count >= 3)
+                {
+                    return matchedBlocks;
                 }
             }
         }
-    }
-
-    public bool IsMatched(GameBlock _Pickblock, GameBlock _otherblock)
-    {
-        //board
-        bool[,] hVisited = new bool[xSize,ySize];
-        bool[,] vVisited = new bool[xSize,ySize];
-        Queue<tii> horizontalQueue = new Queue<tii>();
-        Queue<tii> verticalQueue = new Queue<tii>();
-
-        //인접리스트 생성
-        MakeAdj(_Pickblock,_otherblock.X,_otherblock.Y);
-
-        //큐에 새로운 위치 넣고 BFS돌리기
-
-        //세로 방향
-/*        tii newPos = new tii(_otherblock.X, _otherblock.Y);
-
-        horizontalQueue.Enqueue(newPos);
-        hVisited[newPos.Item1, newPos.Item2] = true;
-        int _horizontalCount = 1;
-
-        while(horizontalQueue.Count != 0)
-        {
-            tii _tii = horizontalQueue.Peek(); horizontalQueue.Dequeue();
-            foreach (var s in horizontalAadj[_tii.Item1,_tii.Item2])
-            {
-                tii nextpos= s;
-                if (hVisited[nextpos.Item1, nextpos.Item2]) continue;
-                hVisited[nextpos.Item1, nextpos.Item2] = true;
-                horizontalQueue.Enqueue(nextpos);
-                _horizontalCount++;
-            }
-        }
-
-
-        //가로 방향
-        verticalQueue.Enqueue(newPos);
-        vVisited[newPos.Item1, newPos.Item2] = true;
-        int _verticalCount = 1;
-        while (verticalQueue.Count != 0)
-        {
-            tii _tii = verticalQueue.Peek(); verticalQueue.Dequeue();
-            foreach (var s in verticalAdj[_tii.Item1, _tii.Item2])
-            {
-                tii nextpos = s;
-                if (vVisited[nextpos.Item1, nextpos.Item2]) continue;
-                vVisited[nextpos.Item1, nextpos.Item2] = true;
-                verticalQueue.Enqueue(nextpos);
-                _verticalCount++;
-            }
-        }*/
-
-        //3개 이상이면 참
-        if (verticalList.Count >=3 || horizontalList.Count >= 3)
-            return true;
-        return false;
+        return null;
     }
 
     public void PressedBlock(GameBlock _gameBlock)
