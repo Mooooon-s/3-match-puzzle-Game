@@ -56,8 +56,8 @@ public class GridManager : MonoBehaviour
     private List<tii>[,] horizontalAadj;
 
 
-    private List<GameBlock> verticalList = new List<GameBlock>();
-    private List<GameBlock> horizontalList = new List<GameBlock>();
+    private HashSet<GameBlock> verticalList = new HashSet<GameBlock>();
+    private HashSet<GameBlock> horizontalList = new HashSet<GameBlock>();
 
     void Awake()
     {
@@ -289,7 +289,7 @@ public class GridManager : MonoBehaviour
         int x = newX;
         for(int i = 0; i < 2; i++)
         {
-            for(int offsetX = 1; offsetX <= xSize; offsetX++)
+            for(int offsetX = 0; offsetX <= xSize; offsetX++)
             {
                 if (i == 0)
                 {
@@ -305,11 +305,11 @@ public class GridManager : MonoBehaviour
                 }
 
 
-                if (Blocks[x, newY].IsAnimalType() && x != newX)
+                if (Blocks[x, _block.Y].IsAnimalType() && x != _block.X)
                 {
-                    if (Blocks[x, newY].AnimalComponent.animalType == _block.AnimalComponent.animalType)
+                    if (Blocks[x, _block.Y].AnimalComponent.animalType == _block.AnimalComponent.animalType)
                     {
-                        horizontalList.Add(Blocks[x, newY]);
+                        horizontalList.Add(Blocks[x, _block.Y]);
                     }
                     else
                     {
@@ -323,7 +323,7 @@ public class GridManager : MonoBehaviour
         int y = newY;
         for (int i = 0; i < 2; i++)
         {
-            for (int offsetY = 1; offsetY <= ySize; offsetY++)
+            for (int offsetY = 0; offsetY <= ySize; offsetY++)
             {
                 if (i == 0)
                 {
@@ -339,11 +339,11 @@ public class GridManager : MonoBehaviour
                 }
 
 
-                if (Blocks[newX, y].IsAnimalType() && y != newY)
+                if (Blocks[_block.X, y].IsAnimalType() && y != _block.Y)
                 {
-                    if (Blocks[newX, y].AnimalComponent.animalType == _block.AnimalComponent.animalType)
+                    if (Blocks[_block.X, y].AnimalComponent.animalType == _block.AnimalComponent.animalType)
                     {
-                        verticalList.Add(Blocks[newX, y]);
+                        verticalList.Add(Blocks[_block.X, y]);
                     }
                     else
                     {
