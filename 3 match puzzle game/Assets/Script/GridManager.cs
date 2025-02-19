@@ -55,6 +55,10 @@ public class GridManager : MonoBehaviour
     private List<tii>[,] verticalAdj;
     private List<tii>[,] horizontalAadj;
 
+
+    private List<GameBlock> verticalList = new List<GameBlock>();
+    private List<GameBlock> horizontalList = new List<GameBlock>();
+
     void Awake()
     {
         offSet = Grid.GetComponent<SpriteRenderer>().bounds.size;
@@ -252,22 +256,6 @@ public class GridManager : MonoBehaviour
     {
         if(_block1.IsMoveable() && _block2.IsMoveable())
         {
-            /*for (int i = 0; i < xSize; i++)
-            {
-                for (int j = 0; j < ySize; j++)
-                {
-                    if (IsMatched(new tii(i, j)))
-                    {
-                        Debug.Log(i + "," + j + "= true");
-                    }
-                    else
-                    {
-                        Debug.Log(i + "," + j + "= false");
-                    }
-                }
-            }*/
-
-
             Blocks[_block1.X, _block1.Y] = _block2;
             Blocks[_block2.X, _block2.Y] = _block1;
 
@@ -275,100 +263,98 @@ public class GridManager : MonoBehaviour
             _block1.MoveableComponent.Move(_block2.X, _block2.Y, fillTime);
             _block2.MoveableComponent.Move(tmpPos.x, tmpPos.y, fillTime);
 
-            if (IsMatched(_block1,new tii(_block2.X,_block2.Y)))
-                Debug.Log(_block2.X + " , " + _block2.Y + "= true");
-            else
-                Debug.Log(_block2.X + " , " + _block2.Y + "= false");
-        }
-    }
-    public void MakeAdj(GameBlock _block)
-    {
-        //인접 리스트 생성
-        adj = new List<tii>[xSize,ySize];
-        verticalAdj = new List<tii>[xSize,ySize];
-        horizontalAadj = new List<tii>[xSize,ySize];
-
-        for (int i=0; i< xSize; i++)
-        {
-            for(int j=0; j< ySize; j++)
+            if (IsMatched(_block1, _block2))
             {
-                adj[i, j] = new List<tii>();
-                verticalAdj[i,j] = new List<tii>();
-                horizontalAadj[i, j] = new List<tii>();
+                int a = 0;
+                Debug.Log("True");
+            }
+            else
+            {
+                Blocks[_block1.X, _block1.Y] = _block2;
+                Blocks[_block2.X, _block2.Y] = _block1;
+
+                tmpPos = new Vector2Int(_block1.X, _block1.Y);
+                _block1.MoveableComponent.Move(_block2.X, _block2.Y, fillTime);
+                _block2.MoveableComponent.Move(tmpPos.x, tmpPos.y, fillTime);
+                Debug.Log("False");
             }
         }
+    }
+    public void MakeAdj(GameBlock _block,int newX, int newY)
+    {
+        horizontalList.Clear();
+        verticalList.Clear();
 
-       /* for(int i = 0; i < 2; i++)
+        horizontalList.Add(_block);
+        int x = newX;
+        for(int i = 0; i < 2; i++)
         {
-            for(int offSetX = 0; offSetX < xSize; offSetX++)
+            for(int offsetX = 1; offsetX <= xSize; offsetX++)
             {
-                int newOffsetX=_block.X;
                 if (i == 0)
                 {
-                    newOffsetX = _block.X - offSetX;
+                    x = newX - offsetX;
                 }
                 else if (i == 1)
                 {
-                    newOffsetX = _block.X + offSetX;
+                    x = newX + offsetX;
+                }
+                if(x < 0 || x >= xSize)
+                {
+                    break;
                 }
 
-                //범위를 넘어 간다면
-                if (newOffsetX < 0 || newOffsetX >= xSize) break;
-                
-                if (Blocks[newOffsetX,_block.Y].Type == BlockType.Normal && Blocks[_block.X,_block.Y].Type == BlockType.Normal)
+
+                if (Blocks[x, newY].IsAnimalType() && x != newX)
                 {
-                    if(Blocks[newOffsetX, _block.Y].AnimalComponent.animalType== Blocks[_block.X, _block.Y].AnimalComponent.animalType)
+                    if (Blocks[x, newY].AnimalComponent.animalType == _block.AnimalComponent.animalType)
                     {
-                        horizontalAadj[newOffsetX, _block.Y].Add(new tii(_block.X, _block.Y));
-                        horizontalAadj[_block.X, _block.Y].Add(new tii(newOffsetX, _block.Y));
+                        horizontalList.Add(Blocks[x, newY]);
                     }
-                }
-
-            }
-        }*/
-
-
-
-
-
-
-        for (int i=0; i<xSize; i++)
-        {
-            for(int j=0; j<ySize; j++)
-            {
-                //x축
-                if (i - 1 >= 0)
-                {
-                    //block Type 비교
-                    if (Blocks[i, j].Type == BlockType.Normal && Blocks[i - 1, j].Type == BlockType.Normal)
+                    else
                     {
-                        //Animal Type비교
-                        if (Blocks[i, j].AnimalComponent.animalType == Blocks[i - 1, j].AnimalComponent.animalType)
-                        {
-                            horizontalAadj[i, j].Add(new tii(i - 1, j));
-                            horizontalAadj[i - 1, j].Add(new tii(i, j));
-                        }
-                    }
-                }
-                //y축
-                if(j - 1 >= 0)
-                {
-                    if (Blocks[i, j].Type == BlockType.Normal && Blocks[i, j-1].Type == BlockType.Normal)
-                    {
-                        if (Blocks[i, j].AnimalComponent.animalType == Blocks[i, j - 1].AnimalComponent.animalType)
-                        {
-                            verticalAdj[i, j].Add(new tii(i, j - 1));
-                            verticalAdj[i, j - 1].Add(new tii(i, j));
-                        }
+                        break;
                     }
                 }
             }
         }
 
+        verticalList.Add(_block);
+        int y = newY;
+        for (int i = 0; i < 2; i++)
+        {
+            for (int offsetY = 1; offsetY <= ySize; offsetY++)
+            {
+                if (i == 0)
+                {
+                    y = newY - offsetY;
+                }
+                else if (i == 1)
+                {
+                    y = newY + offsetY;
+                }
+                if (y < 0 || y >= ySize)
+                {
+                    break;
+                }
 
+
+                if (Blocks[newX, y].IsAnimalType() && y != newY)
+                {
+                    if (Blocks[newX, y].AnimalComponent.animalType == _block.AnimalComponent.animalType)
+                    {
+                        verticalList.Add(Blocks[newX, y]);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+        }
     }
 
-    public bool IsMatched(GameBlock _block,tii newPos)
+    public bool IsMatched(GameBlock _Pickblock, GameBlock _otherblock)
     {
         //board
         bool[,] hVisited = new bool[xSize,ySize];
@@ -377,11 +363,13 @@ public class GridManager : MonoBehaviour
         Queue<tii> verticalQueue = new Queue<tii>();
 
         //인접리스트 생성
-        MakeAdj(_block);
+        MakeAdj(_Pickblock,_otherblock.X,_otherblock.Y);
 
         //큐에 새로운 위치 넣고 BFS돌리기
 
         //세로 방향
+/*        tii newPos = new tii(_otherblock.X, _otherblock.Y);
+
         horizontalQueue.Enqueue(newPos);
         hVisited[newPos.Item1, newPos.Item2] = true;
         int _horizontalCount = 1;
@@ -415,10 +403,10 @@ public class GridManager : MonoBehaviour
                 verticalQueue.Enqueue(nextpos);
                 _verticalCount++;
             }
-        }
+        }*/
 
         //3개 이상이면 참
-        if (_verticalCount >=3 || _horizontalCount >= 3)
+        if (verticalList.Count >=3 || horizontalList.Count >= 3)
             return true;
         return false;
     }
