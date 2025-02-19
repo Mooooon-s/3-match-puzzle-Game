@@ -50,6 +50,11 @@ public class GridManager : MonoBehaviour
     private List<tii>[,] adj;
     private List<tii> connetList = new List<tii>();
 
+
+
+    private List<tii>[,] verticalAdj;
+    private List<tii>[,] horizontalAadj;
+
     void Awake()
     {
         offSet = Grid.GetComponent<SpriteRenderer>().bounds.size;
@@ -140,18 +145,6 @@ public class GridManager : MonoBehaviour
         while (FillStep()) {
             yield return new WaitForSeconds(fillTime);
         } ;
-
-        for (int i = 0; i < xSize; i++)
-        {
-            for (int j = 0; j < ySize; j++)
-            {
-                if (IsMatched(new tii(i, j)))
-                {
-                    Debug.Log(i + "," + j + "= true");
-                }
-                Debug.Log(i + "," + j + "= false");
-            }
-        }
     }
 
     public bool FillStep()
@@ -259,6 +252,21 @@ public class GridManager : MonoBehaviour
     {
         if(_block1.IsMoveable() && _block2.IsMoveable())
         {
+            /*for (int i = 0; i < xSize; i++)
+            {
+                for (int j = 0; j < ySize; j++)
+                {
+                    if (IsMatched(new tii(i, j)))
+                    {
+                        Debug.Log(i + "," + j + "= true");
+                    }
+                    else
+                    {
+                        Debug.Log(i + "," + j + "= false");
+                    }
+                }
+            }*/
+
 
             Blocks[_block1.X, _block1.Y] = _block2;
             Blocks[_block2.X, _block2.Y] = _block1;
@@ -266,19 +274,63 @@ public class GridManager : MonoBehaviour
             Vector2Int tmpPos = new Vector2Int(_block1.X,_block1.Y);
             _block1.MoveableComponent.Move(_block2.X, _block2.Y, fillTime);
             _block2.MoveableComponent.Move(tmpPos.x, tmpPos.y, fillTime);
+
+            if (IsMatched(_block1,new tii(_block2.X,_block2.Y)))
+                Debug.Log(_block2.X + " , " + _block2.Y + "= true");
+            else
+                Debug.Log(_block2.X + " , " + _block2.Y + "= false");
         }
     }
-    public void MakeAdj()
+    public void MakeAdj(GameBlock _block)
     {
         //인접 리스트 생성
         adj = new List<tii>[xSize,ySize];
-        for(int i=0; i< xSize; i++)
+        verticalAdj = new List<tii>[xSize,ySize];
+        horizontalAadj = new List<tii>[xSize,ySize];
+
+        for (int i=0; i< xSize; i++)
         {
             for(int j=0; j< ySize; j++)
             {
                 adj[i, j] = new List<tii>();
+                verticalAdj[i,j] = new List<tii>();
+                horizontalAadj[i, j] = new List<tii>();
             }
         }
+
+       /* for(int i = 0; i < 2; i++)
+        {
+            for(int offSetX = 0; offSetX < xSize; offSetX++)
+            {
+                int newOffsetX=_block.X;
+                if (i == 0)
+                {
+                    newOffsetX = _block.X - offSetX;
+                }
+                else if (i == 1)
+                {
+                    newOffsetX = _block.X + offSetX;
+                }
+
+                //범위를 넘어 간다면
+                if (newOffsetX < 0 || newOffsetX >= xSize) break;
+                
+                if (Blocks[newOffsetX,_block.Y].Type == BlockType.Normal && Blocks[_block.X,_block.Y].Type == BlockType.Normal)
+                {
+                    if(Blocks[newOffsetX, _block.Y].AnimalComponent.animalType== Blocks[_block.X, _block.Y].AnimalComponent.animalType)
+                    {
+                        horizontalAadj[newOffsetX, _block.Y].Add(new tii(_block.X, _block.Y));
+                        horizontalAadj[_block.X, _block.Y].Add(new tii(newOffsetX, _block.Y));
+                    }
+                }
+
+            }
+        }*/
+
+
+
+
+
 
         for (int i=0; i<xSize; i++)
         {
@@ -293,8 +345,8 @@ public class GridManager : MonoBehaviour
                         //Animal Type비교
                         if (Blocks[i, j].AnimalComponent.animalType == Blocks[i - 1, j].AnimalComponent.animalType)
                         {
-                            adj[i, j].Add(new tii(i - 1, j));
-                            adj[i - 1, j].Add(new tii(i, j));
+                            horizontalAadj[i, j].Add(new tii(i - 1, j));
+                            horizontalAadj[i - 1, j].Add(new tii(i, j));
                         }
                     }
                 }
@@ -305,8 +357,8 @@ public class GridManager : MonoBehaviour
                     {
                         if (Blocks[i, j].AnimalComponent.animalType == Blocks[i, j - 1].AnimalComponent.animalType)
                         {
-                            adj[i, j].Add(new tii(i, j - 1));
-                            adj[i, j - 1].Add(new tii(i, j));
+                            verticalAdj[i, j].Add(new tii(i, j - 1));
+                            verticalAdj[i, j - 1].Add(new tii(i, j));
                         }
                     }
                 }
@@ -316,35 +368,57 @@ public class GridManager : MonoBehaviour
 
     }
 
-    public bool IsMatched(tii pos)
+    public bool IsMatched(GameBlock _block,tii newPos)
     {
         //board
-        bool[,] visited = new bool[xSize,ySize];
-        Queue<tii> queue = new Queue<tii>();
+        bool[,] hVisited = new bool[xSize,ySize];
+        bool[,] vVisited = new bool[xSize,ySize];
+        Queue<tii> horizontalQueue = new Queue<tii>();
+        Queue<tii> verticalQueue = new Queue<tii>();
 
         //인접리스트 생성
-        MakeAdj();
+        MakeAdj(_block);
 
-        //큐에 현재 위치 넣고 BFS돌리기
-        queue.Enqueue(pos);
-        visited[pos.Item1, pos.Item2] = true;
-        int _count = 1;
+        //큐에 새로운 위치 넣고 BFS돌리기
 
-        while(queue.Count != 0)
+        //세로 방향
+        horizontalQueue.Enqueue(newPos);
+        hVisited[newPos.Item1, newPos.Item2] = true;
+        int _horizontalCount = 1;
+
+        while(horizontalQueue.Count != 0)
         {
-            tii _tii = queue.Peek(); queue.Dequeue();
-            foreach (var s in adj[_tii.Item1,_tii.Item2])
+            tii _tii = horizontalQueue.Peek(); horizontalQueue.Dequeue();
+            foreach (var s in horizontalAadj[_tii.Item1,_tii.Item2])
             {
                 tii nextpos= s;
-                if (visited[nextpos.Item1, nextpos.Item2]) continue;
-                visited[nextpos.Item1, nextpos.Item2] = true;
-                queue.Enqueue(nextpos);
-                _count++;
+                if (hVisited[nextpos.Item1, nextpos.Item2]) continue;
+                hVisited[nextpos.Item1, nextpos.Item2] = true;
+                horizontalQueue.Enqueue(nextpos);
+                _horizontalCount++;
+            }
+        }
+
+
+        //가로 방향
+        verticalQueue.Enqueue(newPos);
+        vVisited[newPos.Item1, newPos.Item2] = true;
+        int _verticalCount = 1;
+        while (verticalQueue.Count != 0)
+        {
+            tii _tii = verticalQueue.Peek(); verticalQueue.Dequeue();
+            foreach (var s in verticalAdj[_tii.Item1, _tii.Item2])
+            {
+                tii nextpos = s;
+                if (vVisited[nextpos.Item1, nextpos.Item2]) continue;
+                vVisited[nextpos.Item1, nextpos.Item2] = true;
+                verticalQueue.Enqueue(nextpos);
+                _verticalCount++;
             }
         }
 
         //3개 이상이면 참
-        if(_count >= 3)
+        if (_verticalCount >=3 || _horizontalCount >= 3)
             return true;
         return false;
     }
