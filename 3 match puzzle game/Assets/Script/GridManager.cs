@@ -269,39 +269,9 @@ public class GridManager : MonoBehaviour
         verticalList.Clear();
         if(_block.IsAnimalType())
         {
-            horizontalList.Add(_block);
-            for(int i = 0; i < 2; i++)
-            {
-                for (int offsetX = 1; offsetX < xSize; offsetX++)
-                {
-                    int x = newX;
+            MakeHorizontalList(_block, newX, newY);
 
-                    if (i == 0)
-                    {
-                        x = newX - offsetX;
-                    }
-                    else if (i == 1)
-                    {
-                        x = newX + offsetX;
-                    }
-
-                    if (x < 0 || x >= xSize)
-                    {
-                        break;
-                    }
-                    if (Blocks[x, newY].IsAnimalType() && Blocks[x, newY].AnimalComponent.animalType == _block.AnimalComponent.animalType)
-                    {
-                        horizontalList.Add(Blocks[x, newY]);
-                    }
-                    else
-                    {
-                        break;
-                    }
-
-                }
-            }
-
-            if(horizontalList.Count >= 3)
+            if (horizontalList.Count >= 3)
             {
                 List < GameBlock > matchedBlocks = new List<GameBlock>();
                 foreach (var s in horizontalList)
@@ -315,37 +285,8 @@ public class GridManager : MonoBehaviour
                 }
             }
 
-            verticalList.Add(_block);
-            for (int i = 0; i < 2; i++)
-            {
-                for (int offsetY = 1; offsetY < ySize; offsetY++)
-                {
-                    int y = newY;
+            MakeVerticalList(_block, newX, newY);
 
-                    if (i == 0)
-                    {
-                        y = newY - offsetY;
-                    }
-                    else if (i == 1)
-                    {
-                        y = newY + offsetY;
-                    }
-
-                    if (y < 0 || y >= ySize)
-                    {
-                        break;
-                    }
-                    if (Blocks[newX,y].IsAnimalType() && Blocks[newX, y].AnimalComponent.animalType == _block.AnimalComponent.animalType)
-                    {
-                        verticalList.Add(Blocks[newX, y]);
-                    }
-                    else
-                    {
-                        break;
-                    }
-
-                }
-            }
             if (verticalList.Count >= 3)
             {
                 List<GameBlock> matchedBlocks = new List<GameBlock>();
@@ -361,6 +302,74 @@ public class GridManager : MonoBehaviour
             }
         }
         return null;
+    }
+
+    void MakeHorizontalList(GameBlock _block,int newX, int newY)
+    {
+        horizontalList.Add(_block);
+        for (int i = 0; i < 2; i++)
+        {
+            for (int offsetX = 1; offsetX < xSize; offsetX++)
+            {
+                int x = newX;
+
+                if (i == 0)
+                {
+                    x = newX - offsetX;
+                }
+                else if (i == 1)
+                {
+                    x = newX + offsetX;
+                }
+
+                if (x < 0 || x >= xSize)
+                {
+                    break;
+                }
+                if (Blocks[x, newY].IsAnimalType() && Blocks[x, newY].AnimalComponent.animalType == _block.AnimalComponent.animalType)
+                {
+                    horizontalList.Add(Blocks[x, newY]);
+                }
+                else
+                {
+                    break;
+                }
+
+            }
+        }
+    }
+
+    void MakeVerticalList(GameBlock _block, int newX, int newY)
+    {
+        verticalList.Add(_block);
+        for (int i = 0; i < 2; i++)
+        {
+            for (int offsetY = 1; offsetY < ySize; offsetY++)
+            {
+                int y = newY;
+                if (i == 0)
+                {
+                    y = newY - offsetY;
+                }
+                else if (i == 1)
+                {
+                    y = newY + offsetY;
+                }
+
+                if (y < 0 || y >= ySize)
+                {
+                    break;
+                }
+                if (Blocks[newX, y].IsAnimalType() && Blocks[newX, y].AnimalComponent.animalType == _block.AnimalComponent.animalType)
+                {
+                    verticalList.Add(Blocks[newX, y]);
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
     }
 
     public void PressedBlock(GameBlock _gameBlock)
