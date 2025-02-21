@@ -12,6 +12,7 @@ using Vector3 = UnityEngine.Vector3;
 using tii = System.Tuple<int, int>;
 using System;
 using UnityEngine.XR.WSA.Input;
+using TMPro;
 
 public class GridManager : MonoBehaviour
 {
@@ -47,8 +48,8 @@ public class GridManager : MonoBehaviour
     public GameBlock mousePickedBlock;
     public GameBlock mouseEnterBlock;
 
-    private HashSet<GameBlock> verticalList = new HashSet<GameBlock>();
-    private HashSet<GameBlock> horizontalList = new HashSet<GameBlock>();
+    private List<GameBlock> verticalList = new List<GameBlock>();
+    private List<GameBlock> horizontalList = new List<GameBlock>();
 
     void Awake()
     {
@@ -271,34 +272,136 @@ public class GridManager : MonoBehaviour
         {
             MakeHorizontalList(_block, newX, newY);
 
+            List < GameBlock > matchedBlocks = new List<GameBlock>();
             if (horizontalList.Count >= 3)
             {
-                List < GameBlock > matchedBlocks = new List<GameBlock>();
                 foreach (var s in horizontalList)
                 {
                     matchedBlocks.Add(s);
                 }
+            }
 
-                if(matchedBlocks.Count >= 3)
+            if (horizontalList.Count >= 3)
+            {
+                for (int i = 0; i < horizontalList.Count; i++)
                 {
-                    return matchedBlocks;
+                    for (int j = 0; j < 2; j++)
+                    {
+                        for (int offsetY = 1; offsetY < ySize; offsetY++)
+                        {
+                            int y = newY;
+                            if (j == 0)
+                            {
+                                y = newY - offsetY;
+                            }
+                            else if (j == 1)
+                            {
+                                y = newY + offsetY;
+                            }
+
+                            if (y < 0 || y >= ySize)
+                            {
+                                break;
+                            }
+
+                            if (Blocks[horizontalList[i].X,y].IsAnimalType() && Blocks[horizontalList[i].X, y].AnimalComponent.animalType == _block.AnimalComponent.animalType)
+                            {
+                                verticalList.Add(Blocks[horizontalList[i].X, y]);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    if (verticalList.Count < 2)
+                    {
+                        verticalList.Clear();
+                    }
+                    else
+                    {
+                        foreach (var s in verticalList)
+                        {
+                            matchedBlocks.Add(s);
+                        }
+
+                        break;
+                    }
                 }
             }
 
+            if (matchedBlocks.Count >= 3)
+            {
+                return matchedBlocks;
+            }
+
+            verticalList.Clear();
+            horizontalList.Clear();
+
             MakeVerticalList(_block, newX, newY);
 
+            //List<GameBlock> matchedBlocks = new List<GameBlock>();
             if (verticalList.Count >= 3)
             {
-                List<GameBlock> matchedBlocks = new List<GameBlock>();
                 foreach (var s in verticalList)
                 {
                     matchedBlocks.Add(s);
                 }
 
-                if (matchedBlocks.Count >= 3)
+            }
+
+            if (verticalList.Count >= 3)
+            {
+                for (int i = 0; i < verticalList.Count; i++)
                 {
-                    return matchedBlocks;
+                    for (int j = 0; j < 2; j++)
+                    {
+                        for (int offsetX = 1; offsetX < ySize; offsetX++)
+                        {
+                            int x = newX;
+                            if (j == 0)
+                            {
+                                x = newX - offsetX;
+                            }
+                            else if (j == 1)
+                            {
+                                x = newX + offsetX;
+                            }
+
+                            if (x < 0 || x >= xSize)
+                            {
+                                break;
+                            }
+
+                            if (Blocks[x,verticalList[i].Y].IsAnimalType() && Blocks[x, verticalList[i].Y].AnimalComponent.animalType == _block.AnimalComponent.animalType)
+                            {
+                                verticalList.Add(Blocks[x, verticalList[i].Y]);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    if (horizontalList.Count < 2)
+                    {
+                        horizontalList.Clear();
+                    }
+                    else
+                    {
+                        foreach (var s in horizontalList)
+                        {
+                            matchedBlocks.Add(s);
+                        }
+
+                        break;
+                    }
                 }
+            }
+
+            if (matchedBlocks.Count >= 3)
+            {
+                return matchedBlocks;
             }
         }
         return null;
@@ -371,6 +474,130 @@ public class GridManager : MonoBehaviour
             }
         }
     }
+
+    public List<GameBlock> FindMatch(GameBlock _block,int newX,int newY)
+    {
+        List<tii>[,] adjL = new List<tii>[xSize,ySize];
+
+        for(int i=0;i<xSize; i++)
+        {
+            for(int j=0;j<ySize; j++)
+            {
+                adjL[i, j] = new List<tii>();
+            }
+        }
+
+        List<GameBlock> horizonL = new List<GameBlock>();
+        List<GameBlock> verticalL = new List<GameBlock>();
+        List<GameBlock> matchL = new List<GameBlock>();
+
+        makeADJ(adjL);
+
+        //bfs
+        Queue<tii> q = new Queue<tii>();
+        bool[,] Hvisited = new bool[xSize, ySize];
+        bool[,] Vvisited = new bool[xSize, ySize];
+
+        for(int i = 0; i < xSize; i++)
+        {
+            for(int j=0;j < ySize; j++)
+            {
+                //try horizontal bfs
+                if (Hvisited[i, j]==false)
+                {
+                    q.Enqueue(new tii(i, j));
+                    Hvisited[i, j] = true;
+
+                    while(q.Count > 0)
+                    {
+                        var s = q.Dequeue();
+                        foreach( var v in adjL[s.Item1,s.Item2])
+                        {
+                            int x = v.Item1;
+                            int y = v.Item2;
+                            if (Hvisited[x,y] == true) continue;
+
+                            //행이 같은가?
+                            if (s.Item2 != y) continue;
+                            Hvisited[x, y] = true;
+                            horizonL.Add(Blocks[x,y]);
+                            q.Enqueue(new tii(x,y));
+                        }
+                    }
+                    //end while
+
+
+                }
+
+                if(horizonL.Count >= 3)
+                {
+                    return horizonL;
+                }
+
+                q.Clear();
+                //try vertical bfs
+                if (Vvisited[i, j] == false)
+                {
+                    q.Enqueue(new tii(i, j));
+                    Vvisited[i, j] = true;
+
+                    while (q.Count > 0)
+                    {
+                        var s = q.Dequeue();
+                        foreach (var v in adjL[s.Item1, s.Item2])
+                        {
+                            int x = v.Item1;
+                            int y = v.Item2;
+                            if (Vvisited[x, y] == true) continue;
+
+                            //열이 같은가?
+                            if (s.Item1 != x) continue;
+                            Vvisited[x, y] = true;
+                            verticalL.Add(Blocks[x, y]);
+                            q.Enqueue(new tii(x, y));
+                        }
+                    }
+                    //end while
+
+
+                }
+
+                if (verticalL.Count >= 3)
+                {
+                    return verticalL;
+                }
+            }
+        }
+        return null;
+    }
+
+
+    void makeADJ(List<tii>[,] adj)
+    {
+        for (int i = 0; i < xSize; i++)
+        {
+            for (int j = 0; j < ySize; j++)
+            {
+                if (i - 1 < 0) continue;
+                {
+                    if (Blocks[i - 1, j].IsAnimalType() == false || Blocks[i, j].IsAnimalType() == false) continue;
+                    else if (Blocks[i - 1, j].IsAnimalType() && Blocks[i - 1, j].AnimalComponent.animalType == Blocks[i, j].AnimalComponent.animalType)
+                    {
+                        adj[i, j].Add(new tii(i - 1, j));
+                        adj[i - 1, j].Add(new tii(i, j));
+                    }
+
+                    if (j - 1 < 0) continue;
+                    else if (Blocks[i, j - 1].IsAnimalType() && Blocks[i, j - 1].AnimalComponent.animalType == Blocks[i, j].AnimalComponent.animalType)
+                    {
+                        adj[i, j].Add(new tii(i, j - 1));
+                        adj[i, j - 1].Add(new tii(i, j));
+                    }
+                }
+            }
+        }
+    }
+
 
     public void PressedBlock(GameBlock _gameBlock)
     {
