@@ -54,6 +54,13 @@ public class GameBlock : MonoBehaviour
         get { return animalComponent; }
     }
 
+    private ClearAbleBlock clearAbleComponent;
+
+    public ClearAbleBlock ClearAbleComponent
+    {
+        get { return clearAbleComponent; }
+    }
+
     public void Init(int _x, int _y,GridManager _grid,GridManager.BlockType _type)
     {
         x = _x;
@@ -66,6 +73,7 @@ public class GameBlock : MonoBehaviour
     {
         moveableComponent=GetComponent<MoveableBlock>();
         animalComponent=GetComponent<AnimalBlock>();
+        clearAbleComponent = GetComponent<ClearAbleBlock>();
     }
 
     // Start is called before the first frame update
@@ -88,6 +96,11 @@ public class GameBlock : MonoBehaviour
     public bool IsAnimalType()
     {
         return animalComponent != null;
+    }
+
+    public bool IsClearAble()
+    {
+        return clearAbleComponent != null;
     }
 
     private void OnMouseEnter()

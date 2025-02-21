@@ -138,9 +138,17 @@ public class GridManager : MonoBehaviour
 
     public IEnumerator Fill()
     {
-        while (FillStep()) {
+        bool needsRefill = true;
+
+        while(needsRefill)
+        {
             yield return new WaitForSeconds(fillTime);
-        } ;
+            while (FillStep()) {
+                yield return new WaitForSeconds(fillTime);
+            }
+
+            needsRefill = clearAllValidMatches();
+        }
     }
 
     public bool FillStep()
@@ -256,6 +264,10 @@ public class GridManager : MonoBehaviour
                 Vector2Int tmpPos = new Vector2Int(_block1.X,_block1.Y);
                 _block1.MoveableComponent.Move(_block2.X, _block2.Y, fillTime);
                 _block2.MoveableComponent.Move(tmpPos.x, tmpPos.y, fillTime);
+
+                clearAllValidMatches();
+
+                StartCoroutine(Fill());
             }
             else
             {
@@ -375,7 +387,7 @@ public class GridManager : MonoBehaviour
 
                             if (Blocks[x,verticalList[i].Y].IsAnimalType() && Blocks[x, verticalList[i].Y].AnimalComponent.animalType == _block.AnimalComponent.animalType)
                             {
-                                verticalList.Add(Blocks[x, verticalList[i].Y]);
+                                horizontalList.Add(Blocks[x, verticalList[i].Y]);
                             }
                             else
                             {
@@ -475,7 +487,7 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    public List<GameBlock> FindMatch(GameBlock _block,int newX,int newY)
+    public List<GameBlock> FindMatch()
     {
         List<tii>[,] adjL = new List<tii>[xSize,ySize];
 
@@ -615,5 +627,35 @@ public class GridManager : MonoBehaviour
         {
             SwapBlock(mousePickedBlock, mouseEnterBlock);
         }
+    }
+
+    public bool clearAllValidMatches()
+    {
+        bool needsRefill = false;
+        var s = FindMatch();
+        if (s != null)
+        {
+            for(int i=0;i<s.Count;i++)
+            {
+                if(ClearBlock(s[i].X, s[i].Y))
+                {
+                    needsRefill = true;
+                }
+            }
+        }
+
+
+        return needsRefill;
+    }
+
+    public bool ClearBlock(int x,int y)
+    {
+        if (Blocks[x,y].IsClearAble() && !Blocks[x, y].ClearAbleComponent.IsBeingCleared)
+        {
+            Blocks[x, y].ClearAbleComponent.Clear();
+            SpawnNewBlock(x, y, offSet, BlockType.Empty);
+            return true;
+        }
+        return false;
     }
 }
