@@ -252,6 +252,8 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 952419e988db2364db4567015cc589a2, type: 3}
   - {fileID: 21300000, guid: 40e4cf4dfce27ef4fbb5c0875744878e, type: 3}
   - {fileID: 21300000, guid: c1a0572328a9bdb4e912aa43ab367699, type: 3}
+  mousePickedBlock: {fileID: 0}
+  mouseEnterBlock: {fileID: 0}
 --- !u!4 &383497608
 Transform:
   m_ObjectHideFlags: 0
