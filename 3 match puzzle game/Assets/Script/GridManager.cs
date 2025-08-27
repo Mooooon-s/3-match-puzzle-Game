@@ -632,27 +632,27 @@ public class GridManager : MonoBehaviour
     public bool clearAllValidMatches()
     {
         bool needsRefill = false;
-        //var s = FindMatch();
+        var s = FindMatch();
 
-        /*for(int i = 0; i < xSize; i++)
+        for (int i = 0; i < xSize; i++)
         {
-            for(int j = 0; j < ySize; j++)
+            for (int j = 0; j < ySize; j++)
             {
                 IsMatching(Blocks[i, j], i, j);
             }
-        }*/
-
-
-        if (s != null)
-        {
-            for(int i=0;i<s.Count;i++)
-            {
-                if(ClearBlock(s[i].X, s[i].Y))
-                {
-                    needsRefill = true;
-                }
-            }
         }
+
+
+        /*        if (s != null)
+                {
+                    for(int i=0;i<s.Count;i++)
+                    {
+                        if(ClearBlock(s[i].X, s[i].Y))
+                        {
+                            needsRefill = true;
+                        }
+                    }
+                }*/
 
 
         return needsRefill;
